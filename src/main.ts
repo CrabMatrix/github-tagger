@@ -15,21 +15,26 @@ async function run() {
       repo: github.context.repo.repo
     });
 
-    if (list.data.find(ref => ref.ref === `refs/tags/${tag}`)) {
+    core.debug(`list: #${list.data}`);
+
+    try {
       await client.git.createRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         ref: `refs/tags/${tag}`,
         sha: sha
       });
-    } else {
-      core.debug(`tag ${tag} already exists`);
+      core.debug(`Created tag ${tag} for commit ${sha}`);
+    } catch (error) {
+      core.debug(`error: #${error}`);
       await client.git.updateRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
-        ref: `refs/tags/${tag}`,
-        sha: sha
+        ref: `tags/${tag}`,
+        sha: sha,
+        force: true
       });
+      core.debug(`Updated tag ${tag} for commit ${sha}`);
     }
   } catch (error) {
     core.error(error);
