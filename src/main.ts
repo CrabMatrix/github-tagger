@@ -20,8 +20,8 @@ async function run() {
         }
       }`);
       core.debug(`Created tag ${tag} for commit ${sha}`);
-    } catch (err) {
-      core.debug(`error: #${err}`);
+    } catch (error) {
+      core.debug(`error: #${error}`);
 
       await client.graphql(`mutation {
         updateRef (input: {repositoryId: "${github.context.repo.repo}", name: "refs/tags/${tag}", oid: "${sha}"}) {
@@ -33,9 +33,9 @@ async function run() {
 
       core.debug(`Updated tag ${tag} for commit ${sha}`);
     }
-  } catch (err) {
-    core.error(err);
-    core.setFailed(err.message);
+  } catch (error) {
+    core.error(error);
+    core.setFailed(error.message);
   }
 }
 
