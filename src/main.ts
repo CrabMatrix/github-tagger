@@ -8,29 +8,34 @@ async function run() {
     const sha = core.getInput("commit-sha", { required: false }) || github.context.sha;
 
     const client = github.getOctokit(token);
-
     core.debug(`tagging #${sha} with tag ${tag}`);
 
+    let list = await client.rest.git.createRef({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      ref: `refs/tags/${tag}`,
+      sha: sha
+    });
+
+    core.debug(`list: #${list.data}`);
+
     try {
-      await client.graphql(`mutation {
-        createRef(input: {repositoryId: "${github.context.repo.repo}", name: "refs/tags/${tag}", oid: "${sha}"}) {
-          ref {
-            id
-          }
-        }
-      }`);
+      await client.rest.git.createRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `refs/tags/${tag}`,
+        sha: sha
+      });
       core.debug(`Created tag ${tag} for commit ${sha}`);
     } catch (error) {
       core.debug(`error: #${error}`);
-
-      await client.graphql(`mutation {
-        updateRef (input: {repositoryId: "${github.context.repo.repo}", name: "refs/tags/${tag}", oid: "${sha}"}) {
-          ref {
-            id
-          }
-        }
-      }`);
-
+      await client.rest.git.updateRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `tags/${tag}`,
+        sha: sha,
+        force: true
+      });
       core.debug(`Updated tag ${tag} for commit ${sha}`);
     }
   } catch (error) {
