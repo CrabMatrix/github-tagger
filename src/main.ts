@@ -11,12 +11,28 @@ async function run() {
     const client = new github.GitHub(token);
 
     core.debug(`tagging #${sha} with tag ${tag}`);
-    await client.git.createRef({
+
+    let list = await client.git.listRefs({
       owner: github.context.repo.owner,
-      repo: github.context.repo.repo,
-      ref: `refs/tags/${tag}`,
-      sha: sha
+      repo: github.context.repo.repo
     });
+
+    if (list.data.find(ref => ref.ref === `refs/tags/${tag}`)) {
+      core.debug(`tag ${tag} already exists`);
+      await client.git.updateRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `refs/tags/${tag}`,
+        sha: sha
+      });
+    } else {
+      await client.git.createRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `refs/tags/${tag}`,
+        sha: sha
+      });
+    }
   } catch (error) {
     core.error(error);
     core.setFailed(error.message);
