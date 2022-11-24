@@ -9,8 +9,9 @@ async function run() {
 
     const client = github.getOctokit(token);
     core.debug(`tagging #${sha} with tag ${tag}`);
-
+    core.debug(`1.0`);
     try {
+      core.debug(`1.1`);
       await client.rest.git.createRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
@@ -19,7 +20,7 @@ async function run() {
       });
       core.debug(`Created tag ${tag} for commit ${sha}`);
     } catch (error) {
-      core.debug(`error: #${error}`);
+      core.debug(`1.2`);
       await client.rest.git.updateRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
