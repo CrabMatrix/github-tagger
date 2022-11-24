@@ -9,6 +9,7 @@ async function run() {
 
     const client = github.getOctokit(token);
     core.debug(`tagging #${sha} with tag ${tag}`);
+
     try {
       await client.rest.git.createRef({
         owner: github.context.repo.owner,
@@ -22,7 +23,7 @@ async function run() {
       await client.rest.git.updateRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
-        ref: `tags/${tag}`,
+        ref: `refs/tags/${tag}`,
         sha: sha,
         force: true
       });
