@@ -8,32 +8,33 @@ async function run() {
     const sha = core.getInput("commit-sha", { required: false }) || github.context.sha;
 
     const client = github.getOctokit(token);
-    try {
+
+    const refs = await client.rest.git.listMatchingRefs({
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      ref: `tags/${tag}`
+    });
+
+    if (refs.data.length > 0) {
+      core.info(`Overwriting ${tag} with ${sha}`);
+      await client.rest.git.updateRef({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        ref: `refs/tags/${tag}`,
+        sha: sha,
+        force: true
+      });
+    } else {
+      core.info(`Creating tag ${tag} for commit ${sha}`);
       await client.rest.git.createRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         ref: `refs/tags/${tag}`,
         sha: sha
       });
-    } catch {
-      try {
-        await client.rest.git.updateRef({
-          owner: github.context.repo.owner,
-          repo: github.context.repo.repo,
-          ref: `refs/tags/${tag}`,
-          sha: sha,
-          force: true
-        });
-      } catch (error) {
-        if (error instanceof Error) {
-          core.setFailed(error);
-        }
-      }
     }
   } catch (error) {
-    if (error instanceof Error) {
-      core.setFailed(error);
-    }
+    core.setFailed(error as string);
   }
 }
 
