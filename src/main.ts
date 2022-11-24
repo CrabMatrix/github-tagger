@@ -25,12 +25,15 @@ async function run() {
           force: true
         });
       } catch (error) {
-        core.setFailed(error.message);
+        if (error instanceof Error) {
+          core.setFailed(error.message);
+        }
       }
     }
   } catch (error) {
-    core.error(error);
-    core.setFailed(error.message);
+    if (error instanceof Error) {
+      core.setFailed(error.message);
+    }
   }
 }
 
