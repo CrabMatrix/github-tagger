@@ -34,7 +34,7 @@ async function run() {
       });
     }
   } catch (error) {
-    core.setFailed(error as string);
+    if (error instanceof Error) core.setFailed(error.message)
   }
 }
 
