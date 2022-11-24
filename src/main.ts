@@ -8,27 +8,25 @@ async function run() {
     const sha = core.getInput("commit-sha", { required: false }) || github.context.sha;
 
     const client = github.getOctokit(token);
-    core.debug(`tagging #${sha} with tag ${tag}`);
-    core.debug(`1.0`);
     try {
-      core.debug(`1.1`);
       await client.rest.git.createRef({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo,
         ref: `refs/tags/${tag}`,
         sha: sha
       });
-      core.debug(`Created tag ${tag} for commit ${sha}`);
-    } catch (error) {
-      core.debug(`1.2`);
-      await client.rest.git.updateRef({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo,
-        ref: `refs/tags/${tag}`,
-        sha: sha,
-        force: true
-      });
-      core.debug(`Updated tag ${tag} for commit ${sha}`);
+    } catch {
+      try {
+        await client.rest.git.updateRef({
+          owner: github.context.repo.owner,
+          repo: github.context.repo.repo,
+          ref: `refs/tags/${tag}`,
+          sha: sha,
+          force: true
+        });
+      } catch (error) {
+        core.setFailed(error.message);
+      }
     }
   } catch (error) {
     core.error(error);
